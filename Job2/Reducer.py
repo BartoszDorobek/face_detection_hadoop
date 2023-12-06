@@ -7,18 +7,20 @@ def main():
     face_count = 0
 
     for line in sys.stdin:
-        line = line.strip()
-        image_name, _ = line.split(',', 1)
+        # Split the line into image name and face coordinates
+        image_name, _ = line.strip().split(',', 1)
 
-        if current_image == image_name:
-            face_count += 1
-        else:
-            if current_image is not None:
-                print(f"{current_image},{face_count}")
-            current_image = image_name
-            face_count = 1
+        # If it's a new image, print the face count for the previous image
+        if current_image and current_image != image_name:
+            print(f"{current_image},{face_count}")
+            face_count = 0
 
-    if current_image is not None:
+        # Update current image and increment face count
+        current_image = image_name
+        face_count += 1
+
+    # Print the last image's face count
+    if current_image:
         print(f"{current_image},{face_count}")
 
 if __name__ == "__main__":

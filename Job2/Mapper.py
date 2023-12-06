@@ -1,51 +1,49 @@
 #!/usr/bin/env python
 
-import cv2
-import os
-import csv
 import sys
+import cv2
+import csv
+
+# Load the pre-trained Haar Cascade face detector
+cascade_filename = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+face_cascade = cv2.CascadeClassifier(cascade_filename)
 
 
-class FaceDetector():
-    def __init__(self, faceCascadePath):
-        self.faceCascade = cv2.CascadeClassifier(faceCascadePath)
-
-    def detect(self, image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)):
-        rects = self.faceCascade.detectMultiScale(image, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
-        return rects
-
-
-def detect_face(image, face_cascade, scaleFactor, minNeighbors, minSize):
+def detect_face(image, scaleFactor, minNeighbors, minSize):
     image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(image_gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
-
-    return faces  # Return the face coordinates
-
-
-def process_image(image_path, face_cascade, scaleFactor, minNeighbors, minSize):
-    image = cv2.imread(image_path)
-    if image is not None:
-        faces = detect_face(image, face_cascade, scaleFactor, minNeighbors, minSize)
-
-        # Write face coordinates to standard output
-        for x, y, w, h in faces:
-            print(f"{os.path.basename(image_path)},{x},{y},{w},{h}")
+    faces = face_cascade.detectMultiScale(image_gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors,
+                                          minSize=minSize)
+    return faces
 
 
-if __name__ == "__main__":
-    # Load the pre-trained Haar Cascade face detector
-    cascade_filename = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-    face_cascade = cv2.CascadeClassifier(cascade_filename)
+def process_image(line):
+    # Parse the CSV line
+    image_name, x, y, width, height = line.strip().split(',')
 
-    # Detector object created
-    fd = FaceDetector(cascade_filename)
+    # Convert values to integers
+    x, y, width, height = map(int, [x, y, width, height])
 
-    # Define detection parameters
+    # Return a tuple with image name and face coordinates
+    return image_name, (x, y, width, height)
+
+
+def main():
     scaleFactor = 1.2
     minNeighbors = 1
     minSize = (30, 30)
 
-    # Read image paths from input
     for line in sys.stdin:
-        image_path = line.strip()
-        process_image(image_path, face_cascade, scaleFactor, minNeighbors, minSize)
+        # Split the line into image name and face coordinates
+        image_name, face_coordinates = process_image(line)
+
+        # Detect faces using Haar Cascade in the image
+        image = cv2.imread(image_name)
+        if image is not None:
+            faces = detect_face(image, scaleFactor, minNeighbors, minSize)
+
+            # Emit each face's image name and coordinates
+            for face in faces:
+                print(f"{image_name},{','.join(map(str, face))}")
+
+                if __name__ == "__main__":
+                    main()
