@@ -8,13 +8,10 @@ import csv
 cascade_filename = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(cascade_filename)
 
-
 def detect_face(image, scaleFactor, minNeighbors, minSize):
     image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(image_gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors,
-                                          minSize=minSize)
+    faces = face_cascade.detectMultiScale(image_gray, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
     return faces
-
 
 def process_image(line):
     # Parse the CSV line
@@ -25,7 +22,6 @@ def process_image(line):
 
     # Return a tuple with image name and face coordinates
     return image_name, (x, y, width, height)
-
 
 def main():
     scaleFactor = 1.2
@@ -45,5 +41,5 @@ def main():
             for face in faces:
                 print(f"{image_name},{','.join(map(str, face))}")
 
-                if __name__ == "__main__":
-                    main()
+if __name__ == "__main__":
+    main()
